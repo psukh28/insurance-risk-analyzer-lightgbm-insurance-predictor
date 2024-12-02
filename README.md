@@ -60,8 +60,8 @@ insurance-premium-predictor/
 ## 📊 Model Performance
 
 The model is evaluated using 5-fold cross-validation with RMSLE as the metric:
-- Mean CV RMSLE: [Your Score]
-- Standard Deviation: [Your Score]
+- Mean CV RMSLE: [1.1425]
+- Standard Deviation: [+/- 0.0055]
 
 d
 ## 📝 License
