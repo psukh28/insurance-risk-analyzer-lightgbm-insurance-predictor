@@ -1,37 +1,47 @@
+from typing import Union, Sequence
 import numpy as np
 from sklearn.metrics import mean_squared_log_error
 
-def rmsle(y_true: np.ndarray, y_pred: np.ndarray) -> float:
-    """
-    Calculate Root Mean Squared Logarithmic Error
-    Note: This function expects the input values to be in their original scale (not log-transformed)
+def rmsle(
+    true_values: Union[Sequence, np.ndarray], 
+    predicted_values: Union[Sequence, np.ndarray]
+) -> float:
+    """Calculate Root Mean Squared Logarithmic Error.
     
     Args:
-        y_true: True target values
-        y_pred: Predicted target values
+        true_values: Ground truth target values
+        predicted_values: Model predictions
         
     Returns:
         RMSLE score
+        
+    Raises:
+        ValueError: If inputs contain negative values before clipping
     """
-    # Ensure inputs are non-negative
-    y_true = np.clip(y_true, a_min=0, a_max=None)
-    y_pred = np.clip(y_pred, a_min=0, a_max=None)
+    true_values = np.asarray(true_values)
+    predicted_values = np.asarray(predicted_values)
     
-    # Add small constant to prevent log(0)
-    y_true = np.maximum(y_true, 1e-6)
-    y_pred = np.maximum(y_pred, 1e-6)
+    if (true_values < 0).any() or (predicted_values < 0).any():
+        raise ValueError("Input arrays contain negative values")
     
-    return np.sqrt(mean_squared_log_error(y_true, y_pred))
+    # Clip and add small constant to prevent log(0)
+    eps = 1e-6
+    true_values = np.clip(true_values, eps, None)
+    predicted_values = np.clip(predicted_values, eps, None)
+    
+    return np.sqrt(mean_squared_log_error(true_values, predicted_values))
 
-def rmsle_scorer(y_true: np.ndarray, y_pred: np.ndarray) -> float:
-    """
-    Scorer function for sklearn's cross_val_score
+def rmsle_scorer(
+    true_values: Union[Sequence, np.ndarray], 
+    predicted_values: Union[Sequence, np.ndarray]
+) -> float:
+    """Scorer function for sklearn's cross_val_score.
     
     Args:
-        y_true: Array of true values
-        y_pred: Array of predicted values
+        true_values: Ground truth target values
+        predicted_values: Model predictions
         
     Returns:
-        float: Negative RMSLE score (negative for sklearn compatibility)
+        Negative RMSLE score (negative for sklearn compatibility)
     """
-    return -rmsle(y_true, y_pred)
+    return -rmsle(true_values, predicted_values)
